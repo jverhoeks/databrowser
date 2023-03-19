@@ -18,7 +18,8 @@ from textual import events
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical
 from textual.reactive import var
-from textual.widgets import DataTable, DirectoryTree, Footer, Header, Static
+from textual.widgets import DataTable, Footer, Header, Static
+from widgets import DirectoryFilterTree
 
 
 class Notification(Static):
@@ -39,6 +40,12 @@ class DataBrowser(App):
         ("s", "screenshot", "Screenshot"),
         ("q", "quit", "Quit"),
     ]
+
+    LOADERS = {
+        ".csv": pd.read_csv,
+        ".parquet": pd.read_parquet,
+        ".json": pd.read_json,
+    }
 
     show_tree = var(True)
     show_dtype = var(False)
@@ -65,32 +72,31 @@ class DataBrowser(App):
         path = "./" if len(sys.argv) < 2 else sys.argv[1]
         yield Header()
         with Container():
-            yield DirectoryTree(path, id="tree-view")
+            yield DirectoryFilterTree(
+                path,
+                self.LOADERS.keys(),
+                id="tree-view",
+            )
             with Vertical(id="data-view"):
                 # yield Static(id="data", expand=True)
                 yield DataTable(id="data")
         yield Footer()
 
     def on_mount(self, event: events.Mount) -> None:
-        self.query_one(DirectoryTree).focus()
+        self.query_one(DirectoryFilterTree).focus()
 
-    def on_directory_tree_file_selected(
-        self, event: DirectoryTree.FileSelected
+    def on_directory_filter_tree_file_selected(
+        self, event: DirectoryFilterTree.FileSelected
     ) -> None:
         """Called when the user click a file in the directory tree."""
         event.stop()
         self.table = self.query_one("#data", DataTable)
 
-        loaders = {
-            ".csv": pd.read_csv,
-            ".parquet": pd.read_parquet,
-            ".json": pd.read_json,
-        }
         suffix = pathlib.Path(event.path).suffix.lower()
 
         try:
-            if suffix in loaders:
-                self.df = loaders[suffix](event.path)
+            if suffix in self.LOADERS:
+                self.df = self.LOADERS[suffix](event.path)
                 self.__load_table()
             else:
                 self.sub_title = f"Unsupported file type:  {suffix}"
