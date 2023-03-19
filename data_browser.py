@@ -41,7 +41,7 @@ class DataBrowser(App):
     ]
 
     show_tree = var(True)
-    show_dtype = var(True)
+    show_dtype = var(False)
 
     def __load_table(self):
         self.table.clear(columns=True)
