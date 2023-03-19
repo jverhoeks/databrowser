@@ -4,6 +4,8 @@ A easy file browser to view data files.
 
 Currently supports parquet,json and csv with the Pandas library
 
+_Based on the example code_browser from Textual._
+
 ## Usage
 
 python3 data_browser.py [optional path]
