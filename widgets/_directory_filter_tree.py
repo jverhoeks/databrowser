@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
+# import boto3
+from s3path import S3Path
 from rich.style import Style
 from rich.text import Text, TextType
 
@@ -18,6 +20,7 @@ class DirEntry:
 
     path: str
     is_dir: bool
+    fs: str = "local"
     loaded: bool = False
 
 
@@ -91,11 +94,20 @@ class DirectoryFilterTree(Tree[DirEntry]):
         classes: str | None = None,
         disabled: bool = False,
     ) -> None:
-        self.path = path
+
+        # identity file system
+        if path[0:5] == "s3://":
+            self.fs = "s3"
+            self.path = path[4:]  # replace s3:// with / for S3Path
+        else:
+            self.path = path
+            self.fs = "local"
+
         self.filter = filter
+
         super().__init__(
             path,
-            data=DirEntry(path, True),
+            data=DirEntry(self.path, True, self.fs),
             name=name,
             id=id,
             classes=classes,
@@ -152,8 +164,13 @@ class DirectoryFilterTree(Tree[DirEntry]):
 
     def load_directory(self, node: TreeNode[DirEntry]) -> None:
         assert node.data is not None
-        dir_path = Path(node.data.path)
         node.data.loaded = True
+
+        if self.fs == "s3":
+            dir_path = S3Path(node.data.path)
+        else:
+            dir_path = Path(node.data.path)
+
         directory = sorted(
             list(dir_path.iterdir()),
             key=lambda path: (not path.is_dir(), path.name.lower()),
@@ -162,7 +179,7 @@ class DirectoryFilterTree(Tree[DirEntry]):
             if path.is_dir() or path.suffix.lower() in self.filter:
                 node.add(
                     path.name,
-                    data=DirEntry(str(path), path.is_dir()),
+                    data=DirEntry(str(path), path.is_dir(),self.fs),
                     allow_expand=path.is_dir(),
                 )
         node.expand()
@@ -187,4 +204,8 @@ class DirectoryFilterTree(Tree[DirEntry]):
         if dir_entry is None:
             return
         if not dir_entry.is_dir:
-            self.post_message(self.FileSelected(dir_entry.path))
+            if dir_entry.fs == 's3':
+                path = 's3:/' + dir_entry.path
+            else:
+                path = dir_entry.path
+            self.post_message(self.FileSelected(path))

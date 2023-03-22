@@ -69,7 +69,7 @@ class DataBrowser(App):
 
     def compose(self) -> ComposeResult:
         """Compose our UI."""
-        path = "./" if len(sys.argv) < 2 else sys.argv[1]
+        path = "s3://" if len(sys.argv) < 2 else sys.argv[1]
         yield Header()
         with Container():
             yield DirectoryFilterTree(
@@ -84,6 +84,10 @@ class DataBrowser(App):
 
     def on_mount(self, event: events.Mount) -> None:
         self.query_one(DirectoryFilterTree).focus()
+
+
+
+
 
     def on_directory_filter_tree_file_selected(
         self, event: DirectoryFilterTree.FileSelected
