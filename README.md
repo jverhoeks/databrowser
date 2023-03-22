@@ -8,7 +8,18 @@ _Based on the example code_browser from Textual._
 
 ## Usage
 
-python3 data_browser.py [optional path]
+`python3 data_browser.py [optional path]`
+
+_S3 Support_
+
+with the help of S3Path and S3fs the browser now supports s3.
+
+use `python3 data_browser.py s3://` to start browsing buckets
+
+or `python3 data_browser.py s3://bucket/path/subdir/` to browse a specific directory.
+
+it uses the default aws credentials in the environment
+
 
 Select a data file to view
 
