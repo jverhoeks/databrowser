@@ -19,7 +19,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical
 from textual.reactive import var
 from textual.widgets import DataTable, Footer, Header, Static
-from widgets import DirectoryFilterTree
+from .widgets import DirectoryFilterTree
 
 
 class Notification(Static):
@@ -69,7 +69,7 @@ class DataBrowser(App):
 
     def compose(self) -> ComposeResult:
         """Compose our UI."""
-        path = "s3://" if len(sys.argv) < 2 else sys.argv[1]
+        path = "./" if len(sys.argv) < 2 else sys.argv[1]
         yield Header()
         with Container():
             yield DirectoryFilterTree(
@@ -84,10 +84,6 @@ class DataBrowser(App):
 
     def on_mount(self, event: events.Mount) -> None:
         self.query_one(DirectoryFilterTree).focus()
-
-
-
-
 
     def on_directory_filter_tree_file_selected(
         self, event: DirectoryFilterTree.FileSelected
@@ -133,5 +129,9 @@ class DataBrowser(App):
         self.screen.mount(Notification(message))
 
 
-if __name__ == "__main__":
+def run():
     DataBrowser().run()
+
+
+if __name__ == "__main__":
+    run()

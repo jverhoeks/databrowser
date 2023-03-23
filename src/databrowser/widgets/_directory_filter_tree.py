@@ -179,7 +179,7 @@ class DirectoryFilterTree(Tree[DirEntry]):
             if path.is_dir() or path.suffix.lower() in self.filter:
                 node.add(
                     path.name,
-                    data=DirEntry(str(path), path.is_dir(),self.fs),
+                    data=DirEntry(str(path), path.is_dir(), self.fs),
                     allow_expand=path.is_dir(),
                 )
         node.expand()
@@ -204,8 +204,8 @@ class DirectoryFilterTree(Tree[DirEntry]):
         if dir_entry is None:
             return
         if not dir_entry.is_dir:
-            if dir_entry.fs == 's3':
-                path = 's3:/' + dir_entry.path
+            if dir_entry.fs == "s3":
+                path = "s3:/" + dir_entry.path
             else:
                 path = dir_entry.path
             self.post_message(self.FileSelected(path))
