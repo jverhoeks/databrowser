@@ -6,7 +6,15 @@ Currently supports parquet,json and csv with the Pandas library
 
 _Based on the example code_browser from Textual._
 
-## Install
+## install
+
+The package is published on pypi <https://pypi.org/project/databrowser/>
+
+run `pip install databrowser`  (`pip install databrowser --upgrade` to get latest version)
+
+Then just execute `databrowser`
+
+## Build
 
 Execute `poetry install` to install the package and the dependencies
 
@@ -21,9 +29,9 @@ _S3 Support_
 
 with the help of S3Path and S3fs the browser now supports s3.
 
-use `python3 data_browser.py s3://` to start browsing buckets
+use `databrowser s3://` to start browsing buckets
 
-or `python3 data_browser.py s3://bucket/path/subdir/` to browse a specific directory.
+or `databrowser s3://bucket/path/subdir/` to browse a specific directory.
 
 it uses the default aws credentials in the environment
 
