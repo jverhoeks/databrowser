@@ -6,6 +6,13 @@ Currently supports parquet,json and csv with the Pandas library
 
 _Based on the example code_browser from Textual._
 
+## Install
+
+Execute `poetry install` to install the package and the dependencies
+
+Run `python3 src/databrowser/data_browser.py`
+or run `poetry run databrowser` to execute in virtual env
+
 ## Usage
 
 `python3 data_browser.py [optional path]`
@@ -19,7 +26,6 @@ use `python3 data_browser.py s3://` to start browsing buckets
 or `python3 data_browser.py s3://bucket/path/subdir/` to browse a specific directory.
 
 it uses the default aws credentials in the environment
-
 
 Select a data file to view
 
