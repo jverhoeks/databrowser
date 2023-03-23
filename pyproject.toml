@@ -3,7 +3,7 @@ name = "databrowser"
 version = "0.1.1"
 description = "Quick tool to browse and view data files (json,csv,parquet,more) on local disk and s3"
 authors = ["Jacob Verhoeks <jacob.verhoeks@gmail.com>"]
-repository = https://github.com/jverhoeks/databrowser
+repository = "https://github.com/jverhoeks/databrowser"
 license = "MIT"
 readme = "README.md"
 
