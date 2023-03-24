@@ -98,8 +98,10 @@ class DirectoryFilterTree(Tree[DirEntry]):
         if path[0:5] == "s3://":
             self.file_system = "s3"
             self.path = path[4:]  # replace s3:// with / for S3Path
+            self.path_object = S3Path
         else:
             self.path = path
+            self.path_object = Path
             self.file_system = "local"
 
         self.file_filter = file_filter
@@ -167,10 +169,7 @@ class DirectoryFilterTree(Tree[DirEntry]):
         assert node.data is not None
         node.data.loaded = True
 
-        if self.file_system == "s3":
-            dir_path = S3Path(node.data.path)
-        else:
-            dir_path = Path(node.data.path)
+        dir_path = self.path_object(node.data.path)
 
         directory = sorted(
             list(dir_path.iterdir()),
