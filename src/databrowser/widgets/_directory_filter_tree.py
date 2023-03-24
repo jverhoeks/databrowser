@@ -1,15 +1,14 @@
+""" Updated widget to support filter and other Filesystems """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-# import boto3
 from s3path import S3Path
 from rich.style import Style
 from rich.text import Text, TextType
 
-from textual._types import MessageTarget
 from textual.message import Message
 from textual.widgets._tree import TOGGLE_STYLE, Tree, TreeNode
 
@@ -20,7 +19,7 @@ class DirEntry:
 
     path: str
     is_dir: bool
-    fs: str = "local"
+    file_system: str = "local"
     loaded: bool = False
 
 
@@ -87,27 +86,27 @@ class DirectoryFilterTree(Tree[DirEntry]):
     def __init__(
         self,
         path: str,
-        filter: list[str],
+        file_filter: list[str],
         *,
         name: str | None = None,
-        id: str | None = None,
+        id: str | None = None,  # pylint: disable=W0622
         classes: str | None = None,
         disabled: bool = False,
     ) -> None:
 
         # identity file system
         if path[0:5] == "s3://":
-            self.fs = "s3"
+            self.file_system = "s3"
             self.path = path[4:]  # replace s3:// with / for S3Path
         else:
             self.path = path
-            self.fs = "local"
+            self.file_system = "local"
 
-        self.filter = filter
+        self.file_filter = file_filter
 
         super().__init__(
             path,
-            data=DirEntry(self.path, True, self.fs),
+            data=DirEntry(self.path, True, self.file_system),
             name=name,
             id=id,
             classes=classes,
@@ -115,7 +114,8 @@ class DirectoryFilterTree(Tree[DirEntry]):
         )
 
     def process_label(self, label: TextType):
-        """Process a str or Text into a label. Maybe overridden in a subclass to modify how labels are rendered.
+        """Process a str or Text into a label. Maybe overridden in a subclass to modify
+            how labels are rendered.
 
         Args:
             label: Label.
@@ -131,10 +131,10 @@ class DirectoryFilterTree(Tree[DirEntry]):
         return first_line
 
     def render_label(self, node: TreeNode[DirEntry], base_style: Style, style: Style):
-        node_label = node._label.copy()
+        node_label = node._label.copy()  # pylint: disable=W0212
         node_label.stylize(style)
 
-        if node._allow_expand:
+        if node._allow_expand:  # pylint: disable=W0212
             prefix = ("📂 " if node.is_expanded else "📁 ", base_style + TOGGLE_STYLE)
             node_label.stylize_before(
                 self.get_component_rich_style("directory-tree--folder", partial=True)
@@ -163,10 +163,11 @@ class DirectoryFilterTree(Tree[DirEntry]):
         return text
 
     def load_directory(self, node: TreeNode[DirEntry]) -> None:
+        """Load the selected directory into nodes and show"""
         assert node.data is not None
         node.data.loaded = True
 
-        if self.fs == "s3":
+        if self.file_system == "s3":
             dir_path = S3Path(node.data.path)
         else:
             dir_path = Path(node.data.path)
@@ -176,18 +177,20 @@ class DirectoryFilterTree(Tree[DirEntry]):
             key=lambda path: (not path.is_dir(), path.name.lower()),
         )
         for path in directory:
-            if path.is_dir() or path.suffix.lower() in self.filter:
+            if path.is_dir() or path.suffix.lower() in self.file_filter:
                 node.add(
                     path.name,
-                    data=DirEntry(str(path), path.is_dir(), self.fs),
+                    data=DirEntry(str(path), path.is_dir(), self.file_system),
                     allow_expand=path.is_dir(),
                 )
         node.expand()
 
     def on_mount(self) -> None:
+        """Load the root directory on startup"""
         self.load_directory(self.root)
 
     def on_tree_node_expanded(self, event: Tree.NodeSelected) -> None:
+        """event: on tree node expansion"""
         event.stop()
         dir_entry = event.node.data
         if dir_entry is None:
@@ -199,12 +202,13 @@ class DirectoryFilterTree(Tree[DirEntry]):
             self.post_message(self.FileSelected(dir_entry.path))
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+        """event: on tree node selected"""
         event.stop()
         dir_entry = event.node.data
         if dir_entry is None:
             return
         if not dir_entry.is_dir:
-            if dir_entry.fs == "s3":
+            if dir_entry.file_system == "s3":
                 path = "s3:/" + dir_entry.path
             else:
                 path = dir_entry.path
