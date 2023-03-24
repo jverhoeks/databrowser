@@ -18,13 +18,37 @@ pyarrow = ">=5.0.0"
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.1"
 pytest = "^7.2.2"
+black = "^22.12.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
 
 [tool.poetry.scripts]
 databrowser = "databrowser.data_browser:run"
 
+[tool.isort]
+profile = "black"
+
 [tool.black]
 includes = "src"
+line-length = 200
+
+[tool.pylint]
+#rcfile = "pylintrc"
+
+[tool.bandit]
+target = ["src"]
+#skips = ["B408", "B313","B314","B315","B316","B317","B318","B319", "B320"]
+skips = ["B101"]
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[virtualenvs]
+create = true
+in-project = true
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
