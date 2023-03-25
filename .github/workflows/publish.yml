@@ -1,9 +1,10 @@
 ---
 name: publish
 
-on:   # yamllint disable-line rule:truthy
+on:
   push:
-
+    tags:
+    - '*'
 
 jobs:
   publish:
@@ -11,15 +12,22 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: pipx install poetry
+
     - uses: actions/setup-python@v4
       with:
         python-version: '3.9'
         cache: 'poetry'
-    - run: poetry install
-    - name: pylint via poetry
+
+    - name: poetry set version
+      run: poetry version ${{ github.ref_name }}
+
+    - name: poetry installation
+      run: poetry install
+
+    - name: build via poetry
       run: poetry build
+
     - name: Publish package
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
