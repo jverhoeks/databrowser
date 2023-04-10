@@ -55,7 +55,7 @@ class DataBrowser(App):
 
     show_tree = var(True)
     show_dtype = var(False)
-    # dataframe = None
+    dataframe = None
 
     def _load_table(self, suffix=None, file_path=None):
         """internal function to load the table"""

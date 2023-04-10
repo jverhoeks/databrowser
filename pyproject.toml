@@ -36,10 +36,13 @@ profile = "black"
 
 [tool.black]
 includes = "src"
-line-length = 200
+line-length = 120
 
 [tool.pylint]
 #rcfile = "pylintrc"
+
+[tool.pylint.format]
+max-line-length = 120
 
 [tool.bandit]
 target = ["src"]
