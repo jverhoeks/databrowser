@@ -5,10 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from s3path import S3Path
 from rich.style import Style
 from rich.text import Text, TextType
-
+from s3path import S3Path
 from textual.message import Message
 from textual.widgets._tree import TOGGLE_STYLE, Tree, TreeNode
 
@@ -93,7 +92,6 @@ class DirectoryFilterTree(Tree[DirEntry]):
         classes: str | None = None,
         disabled: bool = False,
     ) -> None:
-
         # identity file system
         if path[0:5] == "s3://":
             self.file_system = "s3"
@@ -138,9 +136,7 @@ class DirectoryFilterTree(Tree[DirEntry]):
 
         if node._allow_expand:  # pylint: disable=W0212
             prefix = ("📂 " if node.is_expanded else "📁 ", base_style + TOGGLE_STYLE)
-            node_label.stylize_before(
-                self.get_component_rich_style("directory-tree--folder", partial=True)
-            )
+            node_label.stylize_before(self.get_component_rich_style("directory-tree--folder", partial=True))
         else:
             prefix = (
                 "📄 ",
@@ -151,15 +147,11 @@ class DirectoryFilterTree(Tree[DirEntry]):
             )
             node_label.highlight_regex(
                 r"\..+$",
-                self.get_component_rich_style(
-                    "directory-tree--extension", partial=True
-                ),
+                self.get_component_rich_style("directory-tree--extension", partial=True),
             )
 
         if node_label.plain.startswith("."):
-            node_label.stylize_before(
-                self.get_component_rich_style("directory-tree--hidden")
-            )
+            node_label.stylize_before(self.get_component_rich_style("directory-tree--hidden"))
 
         text = Text.assemble(prefix, node_label)
         return text

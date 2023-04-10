@@ -17,6 +17,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical
 from textual.reactive import var
 from textual.widgets import DataTable, Footer, Header, Static
+
 from .widgets import DirectoryFilterTree
 
 
@@ -47,24 +48,25 @@ class DataBrowser(App):
         ".csv": pd.read_csv,
         ".parquet": pd.read_parquet,
         ".json": pd.read_json,
+        ".xlsx": pd.read_excel,
+        ".xml": pd.read_xml,
+        ".html": pd.read_html,
     }
 
     show_tree = var(True)
     show_dtype = var(False)
-    dataframe = None
+    # dataframe = None
 
-    def _load_table(self, df_in=None):
+    def _load_table(self, suffix=None, file_path=None):
         """internal function to load the table"""
         table = self.query_one("#data", DataTable)
         table.clear(columns=True)
 
-        if df_in:
-            self.dataframe = df_in
+        if file_path:
+            self.dataframe = self.LOADERS[suffix](file_path)
 
         if self.show_dtype:
-            show_df = pd.DataFrame(
-                self.dataframe.dtypes.apply(lambda x: x.name).reset_index()
-            )
+            show_df = pd.DataFrame(self.dataframe.dtypes.apply(lambda x: x.name).reset_index())
             show_df.columns = ["field", "dtype"]
         else:
             show_df = self.dataframe
@@ -97,9 +99,7 @@ class DataBrowser(App):
         del event
         self.query_one(DirectoryFilterTree).focus()
 
-    def on_directory_filter_tree_file_selected(
-        self, event: DirectoryFilterTree.FileSelected
-    ) -> None:
+    def on_directory_filter_tree_file_selected(self, event: DirectoryFilterTree.FileSelected) -> None:
         """Called when the user click a file in the directory tree."""
         event.stop()
 
@@ -107,11 +107,11 @@ class DataBrowser(App):
 
         try:
             if suffix in self.LOADERS:
-                self._load_table(self.LOADERS[suffix](event.path))
+                self._load_table(suffix, event.path)
             else:
                 self.sub_title = f"Unsupported file type:  {suffix}"
         except Exception as exc:  # pylint: disable=W0703
-            self.sub_title = f"ERROR {exc} {suffix}"
+            self.sub_title = f"ERROR {exc} {event.path}"
         else:
             self.sub_title = event.path
 
