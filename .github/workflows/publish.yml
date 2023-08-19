@@ -9,6 +9,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
     steps:
     - uses: actions/checkout@v3
     - run: pipx install poetry
@@ -24,10 +27,7 @@ jobs:
     - name: poetry installation
       run: poetry install
 
-    - name: build via poetry
-      run: poetry build
-
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Poetry Build & Publish
+      run: |
+        poetry build
+        poetry publish
