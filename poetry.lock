@@ -1407,18 +1407,17 @@ boto3 = ["aiobotocore[boto3] (>=2.5.0,<2.6.0)"]
 
 [[package]]
 name = "s3path"
-version = "0.4.2"
+version = "0.5.0"
 description = ""
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "s3path-0.4.2-py3-none-any.whl", hash = "sha256:abbd723ced0567aabc10b4f7b435016d9678330365703aae7d3f905451efbaeb"},
-    {file = "s3path-0.4.2.tar.gz", hash = "sha256:04a2ba953555c0191122d87aa90cde27ac5e68253817831f17c538c96f3e58cf"},
+    {file = "s3path-0.5.0-py3-none-any.whl", hash = "sha256:94b0add85ce6be5c38c2bf109e27bef938850ce8d0c731e54f4527007710acbb"},
+    {file = "s3path-0.5.0.tar.gz", hash = "sha256:ccf2ab37d5c68eabcd10f8c6d2f7ed1ab4911a955cbd617de46b3478db70d1ac"},
 ]
 
 [package.dependencies]
 boto3 = ">=1.16.35"
-packaging = "*"
 smart-open = "*"
 
 [[package]]
@@ -1813,4 +1812,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "0950782891db801ef2ab826ee383a58ee778944aa9a27cbd383550567ab8f28a"
+content-hash = "6e0851ffbfc0ae71a730b7b3a4cc69f0bec931d2dddd7f55688ada9eef836b59"
