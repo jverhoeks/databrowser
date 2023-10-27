@@ -1511,13 +1511,13 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "textual"
-version = "0.33.0"
+version = "0.40.0"
 description = "Modern Text User Interface framework"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "textual-0.33.0-py3-none-any.whl", hash = "sha256:698a093add0fd21c786232bcacde9ff427a9d5dc9ea5deca93437d9453e4ead1"},
-    {file = "textual-0.33.0.tar.gz", hash = "sha256:e0a98b1d9c4458c5bb4269c65d0a7f3e926f197411242d2f8faf80183d47a728"},
+    {file = "textual-0.40.0-py3-none-any.whl", hash = "sha256:3e98f0c9c9a9361d3077c00e3fc5a708f927dd1ce45a1149eb1ba6945ce9d71c"},
+    {file = "textual-0.40.0.tar.gz", hash = "sha256:0fd014f9fab7f6d88167c82f90e115b118b3016b8597281d14c9257967f7812e"},
 ]
 
 [package.dependencies]
@@ -1525,6 +1525,9 @@ importlib-metadata = ">=4.11.3"
 markdown-it-py = {version = ">=2.1.0", extras = ["linkify", "plugins"]}
 rich = ">=13.3.3"
 typing-extensions = ">=4.4.0,<5.0.0"
+
+[package.extras]
+syntax = ["tree-sitter (>=0.20.1,<0.21.0)", "tree_sitter_languages (>=1.7.0)"]
 
 [[package]]
 name = "tomli"
@@ -1816,4 +1819,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "b87f94cb21a08f0bca98652f5de3ac5c50bf7873eca48c1473dfd1c3df09a8fe"
+content-hash = "994861d176126024229ea72507b9940f83de63a48f51a6e1f3f8653e5b6f4e18"
