@@ -51,9 +51,6 @@ max-line-length = 120
 target = ["src"]
 skips = ["B101"]
 
-[build-system]
-requires = ["poetry-core", "poetry-dynamic-versioning"]
-build-backend ="poetry_dynamic_versioning.backend"
 
 [virtualenvs]
 create = true
