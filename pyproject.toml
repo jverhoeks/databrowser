@@ -24,12 +24,12 @@ enable = true
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.1"
-pytest = "^7.2.2"
+pytest = ">=7.2.2,<9.0.0"
 black = "^23.1.0"
 bandit = "^1.7.5"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.2.1"
+pytest = ">=7.2.1,<9.0.0"
 
 [tool.poetry.scripts]
 databrowser = "databrowser.data_browser:run"
