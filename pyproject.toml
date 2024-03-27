@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "databrowser"
-version = "0.38.0"
+version = "0.38.1"
 description = "Quick tool to browse and view data files (json,csv,parquet,more) on local disk and s3"
 authors = ["Jacob Verhoeks <jacob.verhoeks@gmail.com>"]
 repository = "https://github.com/jverhoeks/databrowser"
