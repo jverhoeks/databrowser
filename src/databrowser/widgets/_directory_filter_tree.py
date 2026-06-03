@@ -83,7 +83,7 @@ class DirectoryFilterTree(Tree[DirEntry]):
             self.path: str = path
             super().__init__()
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         path: str,
         file_filter: list[str],
