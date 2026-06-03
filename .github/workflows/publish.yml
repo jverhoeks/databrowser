@@ -15,21 +15,18 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     steps:
-      - uses: actions/checkout@v3
-      - run: pipx install poetry
-
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
         with:
-          python-version: "3.9"
-          cache: "poetry"
+          # hatch-vcs derives the version from the git tag, so fetch tags.
+          fetch-depth: 0
 
-      - name: poetry set version
-        run: poetry version ${{ github.ref_name }}
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.14"
 
-      - name: poetry installation
-        run: poetry install
+      - name: Build
+        run: uv build
 
-      - name: Poetry Build & Publish
-        run: |
-          poetry build
-          poetry publish
+      - name: Publish to PyPI (trusted publishing)
+        run: uv publish --trusted-publishing always

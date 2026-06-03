@@ -1,59 +1,63 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
 name = "databrowser"
-version = "0.38.1"
+dynamic = ["version"]
 description = "Quick tool to browse and view data files (json,csv,parquet,more) on local disk and s3"
-authors = ["Jacob Verhoeks <jacob.verhoeks@gmail.com>"]
-repository = "https://github.com/jverhoeks/databrowser"
-license = "MIT"
+authors = [{ name = "Jacob Verhoeks", email = "jacob.verhoeks@gmail.com" }]
+license = { text = "MIT" }
 readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "s3fs>=2026.4.0",
+    "s3path>=0.6.2",
+    "pandas>=3.0.0",
+    "textual>=8.2.0",
+    "pyarrow>=24.0.0",
+    "openpyxl>=3.1.0",
+    "xlrd>=2.0.2",
+    "beautifulsoup4>=4.14.0",
+    "lxml>=6.1.0",
+    "html5lib>=1.1",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-s3fs = "^2024.3.1"
-s3path = ">=0.4.1,<0.6.0"
-pandas = ">=1.5.2,<3.0.0"
-textual = "^0.54.0"
-pyarrow = ">=5.0.0"
-xlrd = "^2.0.1"
-beautifulsoup4 = "^4.12.2"
-lxml = "^5.1.0"
-html5lib = "^1.1"
+[project.urls]
+repository = "https://github.com/jverhoeks/databrowser"
 
-[tool.poetry-dynamic-versioning]
-enable = true
-
-[tool.poetry.group.dev.dependencies]
-pylint = "^3.1.0"
-pytest = "^8.1.1"
-black = "24.3.0"
-bandit = "^1.7.5"
-
-
-[tool.poetry.scripts]
+[project.scripts]
 databrowser = "databrowser.data_browser:run"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.1.1",
+    "pytest-asyncio>=0.23",
+    "pylint>=4.0.0",
+    "black>=26.5.1",
+    "bandit>=1.8.0",
+]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/databrowser"]
 
 [tool.isort]
 profile = "black"
 
 [tool.black]
-includes = "src"
 line-length = 120
-
-[tool.pylint]
-#rcfile = "pylintrc"
 
 [tool.pylint.format]
 max-line-length = 120
 
 [tool.bandit]
-target = ["src"]
+targets = ["src"]
 skips = ["B101"]
-
-
-[virtualenvs]
-create = true
-in-project = true
 
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "INFO"
+asyncio_mode = "auto"

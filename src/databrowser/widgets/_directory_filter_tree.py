@@ -1,4 +1,5 @@
-""" Updated widget to support filter and other Filesystems """
+"""Updated widget to support filter and other Filesystems"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -131,10 +132,10 @@ class DirectoryFilterTree(Tree[DirEntry]):
         return first_line
 
     def render_label(self, node: TreeNode[DirEntry], base_style: Style, style: Style):
-        node_label = node._label.copy()  # pylint: disable=W0212
+        node_label = node.label.copy()
         node_label.stylize(style)
 
-        if node._allow_expand:  # pylint: disable=W0212
+        if node.allow_expand:
             prefix = ("📂 " if node.is_expanded else "📁 ", base_style + TOGGLE_STYLE)
             node_label.stylize_before(self.get_component_rich_style("directory-tree--folder", partial=True))
         else:

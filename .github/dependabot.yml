@@ -5,7 +5,13 @@
 
 version: 2
 updates:
-  - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  # Python dependencies are managed by uv (pyproject.toml + uv.lock).
+  - package-ecosystem: "uv"
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+  # Keep GitHub Actions used by the workflows up to date.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

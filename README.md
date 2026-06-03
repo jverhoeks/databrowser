@@ -16,10 +16,12 @@ Then just execute `databrowser`
 
 ## Build
 
-Execute `poetry install` to install the package and the dependencies
+This project uses [uv](https://docs.astral.sh/uv/) (Python >= 3.13).
 
-Run `python3 src/databrowser/data_browser.py`
-or run `poetry run databrowser` to execute in virtual env
+Execute `uv sync` to create the virtual env and install the package and its dependencies.
+
+Run `uv run databrowser` to execute in the virtual env
+(or `uv run python src/databrowser/data_browser.py`).
 
 ## Usage
 
