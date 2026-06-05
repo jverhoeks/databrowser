@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 
 `databrowser` is a terminal UI (TUI) application for browsing and viewing data files
-(csv, parquet, json, xlsx, xml, html) from local disk or S3. It is built on
+(csv, tsv, parquet, feather, orc, json, xlsx, xls, xml, html) from local disk or S3. It is built on
 [Textual](https://textual.textualize.io/) and reads files into pandas DataFrames.
 Originally derived from Textual's `code_browser` example.
 

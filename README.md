@@ -5,7 +5,7 @@
 
 A terminal file browser for quickly viewing data files, from local disk or S3.
 
-Supports csv, parquet, json, xlsx, xls, xml and html — read into pandas DataFrames
+Supports csv, tsv, parquet, feather, orc, json, xlsx, xls, xml and html — read into pandas DataFrames
 and shown in a scrollable table (with a dtype view). Built on
 [Textual](https://textual.textualize.io/).
 
