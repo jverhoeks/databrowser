@@ -1,10 +1,12 @@
 # databrowser
 
-A easy file browser to view data files.
+A terminal file browser for quickly viewing data files, from local disk or S3.
 
-Currently supports parquet,json and csv with the Pandas library
+Supports csv, parquet, json, xlsx, xls, xml and html — read into pandas DataFrames
+and shown in a scrollable table (with a dtype view). Built on
+[Textual](https://textual.textualize.io/).
 
-_Based on the example code_browser from Textual._
+_Originally based on the example code_browser from Textual._
 
 ## install
 
@@ -25,7 +27,7 @@ Run `uv run databrowser` to execute in the virtual env
 
 ## Usage
 
-`python3 data_browser.py [optional path]`
+`databrowser [optional path]` (defaults to the current directory)
 
 _S3 Support_
 
