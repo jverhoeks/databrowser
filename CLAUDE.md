@@ -38,9 +38,11 @@ Two source files in `src/databrowser/`:
   `list(self.LOADERS.keys())`). Selecting a file runs `_load_file()`, a
   `@work(thread=True)` worker that reads the file **off the UI thread** (pandas readers
   block) and then calls `_render_table()` back on the UI thread via `call_from_thread`, so
-  the interface stays responsive on large files. `_render_table()` is also reused for the
-  `d` dtype toggle (no re-read). Rendering is capped at `ROW_LIMIT` (100) rows; loaders in
-  `NROWS_LOADERS` (csv, xlsx) are passed `nrows` so large files aren't read in full just to
+  the interface stays responsive on large files (the DataTable shows a loading indicator,
+  `table.loading`, while the worker reads). `_render_table()` is also reused for the
+  `d` dtype toggle (no re-read). Rendering is capped at `self.row_limit` (default `ROW_LIMIT`
+  100, overridable via the `DATABROWSER_ROWS` env var or `DataBrowser(path, row_limit=...)`);
+  loaders in `NROWS_LOADERS` (csv, xlsx) are passed `nrows` so large files aren't read in full just to
   preview, and the subtitle (`_status_text()`) reports row/column counts and whether the
   view is truncated. `pd.read_html` returns a *list* of DataFrames, so the first table is
   taken. Key bindings: `f` toggle file tree, `d` toggle dtype view, `s` SVG screenshot,

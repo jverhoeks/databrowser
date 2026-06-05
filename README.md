@@ -45,8 +45,11 @@ Select a data file to view
 
 * press Q to quit
 
+By default the preview shows the first 100 rows. Set `DATABROWSER_ROWS` to change it,
+e.g. `DATABROWSER_ROWS=500 databrowser data/`.
+
 ## examples
 
-![Screenshot data](images/screenshot_data.svg)
+![Screenshot data](https://raw.githubusercontent.com/jverhoeks/databrowser/main/images/screenshot_data.svg)
 
-![Screenshot dtype](images/screenshot_dtype.svg)
+![Screenshot dtype](https://raw.githubusercontent.com/jverhoeks/databrowser/main/images/screenshot_dtype.svg)

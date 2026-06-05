@@ -7,6 +7,7 @@ Run with:
 
 """
 
+import os
 import pathlib
 import sys
 
@@ -21,7 +22,7 @@ from textual.worker import get_current_worker
 from .widgets import DirectoryFilterTree
 
 
-class DataBrowser(App):
+class DataBrowser(App):  # pylint: disable=too-many-instance-attributes
     """Textual data browser app."""
 
     CSS_PATH = "data_browser.css"
@@ -42,7 +43,8 @@ class DataBrowser(App):
         ".html": pd.read_html,
     }
 
-    # Maximum number of rows rendered in the preview table.
+    # Default number of rows rendered in the preview table (override per instance
+    # or via the DATABROWSER_ROWS environment variable).
     ROW_LIMIT = 100
     # Loaders whose pandas reader accepts ``nrows`` so we can avoid reading a whole
     # multi-GB file just to preview the first rows.
@@ -51,9 +53,10 @@ class DataBrowser(App):
     show_tree = var(True)
     show_dtype = var(False)
 
-    def __init__(self, path: str = "./", **kwargs) -> None:
+    def __init__(self, path: str = "./", row_limit: int = ROW_LIMIT, **kwargs) -> None:
         super().__init__(**kwargs)
         self.path = path
+        self.row_limit = max(1, row_limit)
         self.dataframe = None
         self._filename = ""
         # Whether the last read was capped by ``nrows`` (so the true row count is unknown).
@@ -69,7 +72,7 @@ class DataBrowser(App):
         """
         worker = get_current_worker()
         try:
-            read_kwargs = {"nrows": self.ROW_LIMIT + 1} if suffix in self.NROWS_LOADERS else {}
+            read_kwargs = {"nrows": self.row_limit + 1} if suffix in self.NROWS_LOADERS else {}
             data = self.LOADERS[suffix](file_path, **read_kwargs)
             # pd.read_html returns a list of DataFrames (one per <table>); preview the first.
             dataframe = data[0] if isinstance(data, list) else data
@@ -90,12 +93,14 @@ class DataBrowser(App):
 
     def _on_load_error(self, exc: Exception, file_path: str) -> None:
         """Surface a load failure to the user (runs on the UI thread)."""
+        self.query_one("#data", DataTable).loading = False
         self.notify(f"{type(exc).__name__}: {exc}", title="Failed to load", severity="error")
         self.sub_title = f"ERROR loading {file_path}"
 
     def _render_table(self) -> None:
         """Render the current DataFrame into the DataTable (UI thread only)."""
         table = self.query_one("#data", DataTable)
+        table.loading = False
         table.clear(columns=True)
 
         if self.dataframe is None:
@@ -109,7 +114,7 @@ class DataBrowser(App):
 
         table.add_columns(*show_df.columns.to_list())
         table.zebra_stripes = True
-        for i in range(min(self.ROW_LIMIT, len(show_df))):
+        for i in range(min(self.row_limit, len(show_df))):
             table.add_row(*show_df.iloc[i])
 
         self.sub_title = self._status_text()
@@ -119,11 +124,11 @@ class DataBrowser(App):
         rows, cols = self.dataframe.shape
         if self.show_dtype:
             return f"{self._filename} — dtypes ({cols} fields)"
-        if rows > self.ROW_LIMIT:
+        if rows > self.row_limit:
             if self._capped:
-                shown = f"showing first {self.ROW_LIMIT} rows"
+                shown = f"showing first {self.row_limit} rows"
             else:
-                shown = f"showing {self.ROW_LIMIT} of {rows} rows"
+                shown = f"showing {self.row_limit} of {rows} rows"
         else:
             shown = f"{rows} rows"
         return f"{self._filename} — {shown}, {cols} columns"
@@ -160,6 +165,7 @@ class DataBrowser(App):
             self.sub_title = f"Unsupported file type: {suffix}"
             return
 
+        self.query_one("#data", DataTable).loading = True
         self.sub_title = f"Loading {pathlib.Path(event.path).name} …"
         self._load_file(suffix, event.path)
 
@@ -191,7 +197,11 @@ class DataBrowser(App):
 def run():
     """Run helper"""
     path = "./" if len(sys.argv) < 2 else sys.argv[1]
-    DataBrowser(path).run()
+    try:
+        row_limit = int(os.environ.get("DATABROWSER_ROWS", DataBrowser.ROW_LIMIT))
+    except ValueError:
+        row_limit = DataBrowser.ROW_LIMIT
+    DataBrowser(path, row_limit=row_limit).run()
 
 
 if __name__ == "__main__":
