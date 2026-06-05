@@ -13,11 +13,29 @@ _Originally based on the example code_browser from Textual._
 
 ## install
 
+### Run without installing (uvx)
+
+With [uv](https://docs.astral.sh/uv/), run it in a throwaway environment — no install needed:
+
+```bash
+uvx databrowser [path]
+uvx databrowser s3://bucket/dir/
+uvx databrowser hf://datasets/org/name
+```
+
+For Google Cloud Storage or Azure, pull in the matching extra:
+
+```bash
+uvx --from 'databrowser[gcs]' databrowser gs://bucket/dir/
+uvx --from 'databrowser[azure]' databrowser az://container/dir/
+```
+
+### Install from PyPI
+
 The package is published on pypi <https://pypi.org/project/databrowser/>
 
-run `pip install databrowser`  (`pip install databrowser --upgrade` to get latest version)
-
-Then just execute `databrowser`
+run `pip install databrowser`  (`pip install databrowser --upgrade` to get latest version).
+Then just execute `databrowser`. The `gcs` / `azure` / `all` extras add those cloud backends.
 
 ## Build
 
@@ -51,7 +69,9 @@ Select a data file to view
 * press Q to quit
 
 By default the preview shows the first 100 rows. Set `DATABROWSER_ROWS` to change it,
-e.g. `DATABROWSER_ROWS=500 databrowser data/`.
+e.g. `DATABROWSER_ROWS=500 databrowser data/` (or pass `--rows 500`).
+
+Run `databrowser --help` for all options.
 
 ## examples
 
