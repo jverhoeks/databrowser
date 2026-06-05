@@ -85,6 +85,17 @@ async def test_row_limit_and_status(data_dir):
         assert "showing first" in app.sub_title
 
 
+async def test_configurable_row_limit(data_dir):
+    """A custom row_limit caps the rendered rows and is reflected in the status."""
+    app = DataBrowser(str(data_dir), row_limit=5)
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        await _select(app, pilot, data_dir / "big.csv")
+        table = app.query_one("#data", DataTable)
+        assert table.row_count == 5
+        assert "showing first 5 rows" in app.sub_title
+
+
 async def test_corrupt_file_reports_error(data_dir):
     """A file that fails to parse surfaces an error and leaves the table empty."""
     (data_dir / "broken.parquet").write_bytes(b"not a real parquet file")
