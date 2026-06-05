@@ -32,15 +32,15 @@ Run `uv run databrowser` to execute in the virtual env
 
 `databrowser [optional path]` (defaults to the current directory)
 
-_S3 Support_
+_Remote filesystems_
 
-with the help of S3Path and S3fs the browser now supports s3.
+Any [fsspec](https://filesystem-spec.readthedocs.io/) URL works, not just local paths:
 
-use `databrowser s3://` to start browsing buckets
+* `databrowser s3://bucket/path/` — S3 (uses the default AWS credentials in the environment)
+* `databrowser hf://datasets/org/name` — Hugging Face datasets (set `HF_TOKEN` for private ones)
+* `databrowser gs://bucket/path/` — Google Cloud Storage (needs `gcsfs` installed)
 
-or `databrowser s3://bucket/path/subdir/` to browse a specific directory.
-
-it uses the default aws credentials in the environment
+The protocol is resolved automatically, so the same browsing works for every backend.
 
 Select a data file to view
 

@@ -33,6 +33,7 @@ jobs:
       contents: write   # push the version tag
     outputs:
       new_tag: ${{ steps.tag.outputs.new_tag }}
+      old_tag: ${{ steps.tag.outputs.old_tag }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -49,7 +50,8 @@ jobs:
 
   publish:
     needs: tag
-    if: needs.tag.outputs.new_tag != ''
+    # Publish only when a genuinely NEW tag was created (#none leaves new_tag == old_tag).
+    if: needs.tag.outputs.new_tag != '' && needs.tag.outputs.new_tag != needs.tag.outputs.old_tag
     runs-on: ubuntu-24.04
     permissions:
       contents: write   # create the GitHub release
