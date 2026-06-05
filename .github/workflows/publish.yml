@@ -1,32 +1,65 @@
 ---
+# Single release pipeline: on a merge to main this bumps the version, pushes the
+# tag, builds, and publishes to PyPI in one job. Doing it in one run avoids two
+# long-standing problems with the old split setup:
+#   * a tag pushed by GITHUB_TOKEN never triggers a separate `on: push`/`on: release`
+#     workflow, so merges never actually published;
+#   * publishing on both `release: published` and `push: tags` caused duplicate,
+#     racing publish runs.
+# The workflow file is kept named `publish.yml` so the PyPI trusted-publisher
+# configuration (which is keyed on the workflow filename) stays valid.
+#
+# Add `#none` to the merge commit message to bump+publish nothing; `#minor` /
+# `#major` to bump more than a patch.
 name: publish
 
 on:
-  release:
-    types: [published]
-  push:
-    tags:
-      - "*"
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # push the version tag + create the GitHub release
+  id-token: write   # PyPI trusted publishing (OIDC)
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
-    permissions:
-      # IMPORTANT: this permission is mandatory for trusted publishing
-      id-token: write
+  release:
+    # Only on a real merge (skip PRs that are closed without merging).
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
         with:
-          # hatch-vcs derives the version from the git tag, so fetch tags.
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
+      - name: Bump version and push tag
+        id: tag
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
+
       - uses: astral-sh/setup-uv@v7
+        if: steps.tag.outputs.new_tag != ''
         with:
           enable-cache: true
           python-version: "3.14"
 
-      - name: Build
-        run: uv build
+      - name: Build (hatch-vcs derives the version from the new tag)
+        if: steps.tag.outputs.new_tag != ''
+        run: |
+          git fetch --tags --force
+          uv build
 
       - name: Publish to PyPI (trusted publishing)
+        if: steps.tag.outputs.new_tag != ''
         run: uv publish --trusted-publishing always
+
+      - name: Create GitHub release
+        if: steps.tag.outputs.new_tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${{ steps.tag.outputs.new_tag }}" --verify-tag --generate-notes

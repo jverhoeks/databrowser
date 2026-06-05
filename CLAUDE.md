@@ -62,8 +62,11 @@ Two source files in `src/databrowser/`:
 ## Release flow (CI)
 
 Versioning is automated — **do not bump the version manually**. The `version` is dynamic,
-derived from the git tag by **hatch-vcs** (`[tool.hatch.version] source = "vcs"`). On PR
-merge to `main`, `bump-version.yml` tags a patch bump; publishing a release/tag triggers
-`publish.yml`, which runs `uv build` + `uv publish --trusted-publishing always` (the tag
-supplies the version automatically — no manual `version` step). `python-pr.yml` (pylint +
-pytest) and `bandit-pr.yml` run on PRs via uv.
+derived from the git tag by **hatch-vcs** (`[tool.hatch.version] source = "vcs"`). On every
+merge to `main`, `publish.yml` runs one job that bumps + pushes the tag (default patch; put
+`#minor`/`#major`/`#none` in the merge commit message to change it), then `uv build` +
+`uv publish --trusted-publishing always`, then creates the GitHub release. Doing tag and
+publish in a single run avoids the `GITHUB_TOKEN`-pushed-tag-doesn't-trigger-workflows
+problem and the old double-publish race. `publish.yml` keeps its filename because the PyPI
+trusted-publisher config is keyed on it. `python-pr.yml` (pylint + pytest) and
+`bandit-pr.yml` run on PRs via uv.
