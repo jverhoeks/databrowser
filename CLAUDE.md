@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Overview
 
 `databrowser` is a terminal UI (TUI) application for browsing and viewing data files
-(csv, tsv, parquet, feather, orc, json, xlsx, xls, xml, html) from local disk or S3. It is built on
+(csv, tsv, parquet, feather, orc, json, xlsx, xls, xml, html) from local disk, S3, Hugging Face, or any fsspec filesystem. It is built on
 [Textual](https://textual.textualize.io/) and reads files into pandas DataFrames.
 Originally derived from Textual's `code_browser` example.
 
@@ -52,9 +52,10 @@ Two source files in `src/databrowser/`:
 
 - **`widgets/_directory_filter_tree.py`** — `DirectoryFilterTree`, a subclass of Textual's
   `Tree` that lazily loads directory contents and filters to directories + filtered
-  suffixes. The **filesystem abstraction** lives here: a `path` starting with `s3://`
-  switches `self.path_object` from `pathlib.Path` to `s3path.S3Path`, so the same
-  iteration/loading code works for both local and S3. Selecting a file posts a
+  suffixes. The **filesystem abstraction** lives here: `fsspec.core.url_to_fs(path)`
+  resolves the protocol (local, `s3://`, `hf://`, `gs://`, …) to a filesystem and listing uses
+  `self.fs.ls(..., detail=True)`, so the same iteration/loading code works for every backend
+  (the selected file's URL is rebuilt with `self.fs.unstrip_protocol`). Selecting a file posts a
   `FileSelected` message that bubbles up to `DataBrowser.on_directory_filter_tree_file_selected`.
 
 `data_browser.css` styles the layout (the `-show-tree` class toggles tree visibility).
