@@ -20,6 +20,9 @@ def data_dir(tmp_path):
     df.to_csv(tmp_path / "sample.csv", index=False)
     df.to_json(tmp_path / "sample.json")
     df.to_parquet(tmp_path / "sample.parquet")
+    df.to_feather(tmp_path / "sample.feather")
+    df.to_orc(tmp_path / "sample.orc")
+    df.to_csv(tmp_path / "sample.tsv", sep="\t", index=False)
     df.to_excel(tmp_path / "sample.xlsx", index=False)
     (tmp_path / "sample.html").write_text(df.to_html(index=False))
     # A frame larger than ROW_LIMIT to exercise truncation reporting.
@@ -48,7 +51,19 @@ async def test_tree_loads_supported_files(data_dir):
         assert "sample.json" in labels
 
 
-@pytest.mark.parametrize("filename", ["sample.csv", "sample.parquet", "sample.json", "sample.xlsx", "sample.html"])
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "sample.csv",
+        "sample.tsv",
+        "sample.parquet",
+        "sample.feather",
+        "sample.orc",
+        "sample.json",
+        "sample.xlsx",
+        "sample.html",
+    ],
+)
 async def test_selecting_file_populates_table(data_dir, filename):
     """Selecting a data file loads it into the DataTable with rows and columns."""
     app = DataBrowser(str(data_dir))

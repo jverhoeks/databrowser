@@ -35,7 +35,10 @@ class DataBrowser(App):  # pylint: disable=too-many-instance-attributes
 
     LOADERS = {
         ".csv": pd.read_csv,
+        ".tsv": pd.read_table,  # tab-separated
         ".parquet": pd.read_parquet,
+        ".feather": pd.read_feather,
+        ".orc": pd.read_orc,
         ".json": pd.read_json,
         ".xlsx": pd.read_excel,
         ".xls": pd.read_excel,
@@ -48,7 +51,7 @@ class DataBrowser(App):  # pylint: disable=too-many-instance-attributes
     ROW_LIMIT = 100
     # Loaders whose pandas reader accepts ``nrows`` so we can avoid reading a whole
     # multi-GB file just to preview the first rows.
-    NROWS_LOADERS = {".csv", ".xlsx"}
+    NROWS_LOADERS = {".csv", ".tsv", ".xlsx"}
 
     show_tree = var(True)
     show_dtype = var(False)
