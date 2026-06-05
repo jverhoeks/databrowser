@@ -15,7 +15,7 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # hatch-vcs derives the version from the git tag, so fetch tags.
           fetch-depth: 0
