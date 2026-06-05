@@ -24,6 +24,12 @@ dependencies = [
     "html5lib>=1.1",
 ]
 
+[project.optional-dependencies]
+# fsspec backends for extra remote filesystems (local/s3/hf work out of the box).
+gcs = ["gcsfs"]
+azure = ["adlfs"]
+all = ["gcsfs", "adlfs"]
+
 [project.urls]
 repository = "https://github.com/jverhoeks/databrowser"
 

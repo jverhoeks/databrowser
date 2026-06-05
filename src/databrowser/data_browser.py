@@ -7,9 +7,10 @@ Run with:
 
 """
 
+import argparse
 import os
 import pathlib
-import sys
+from importlib.metadata import PackageNotFoundError, version
 
 import pandas as pd
 from textual import events, work
@@ -197,14 +198,46 @@ class DataBrowser(App):  # pylint: disable=too-many-instance-attributes
         self.notify(f"Screenshot saved to '{saved}'", title="Screenshot")
 
 
-def run():
-    """Run helper"""
-    path = "./" if len(sys.argv) < 2 else sys.argv[1]
+def _version() -> str:
+    """Installed package version (for ``--version``)."""
     try:
-        row_limit = int(os.environ.get("DATABROWSER_ROWS", DataBrowser.ROW_LIMIT))
-    except ValueError:
-        row_limit = DataBrowser.ROW_LIMIT
-    DataBrowser(path, row_limit=row_limit).run()
+        return version("databrowser")
+    except PackageNotFoundError:  # running from a source checkout without metadata
+        return "0+unknown"
+
+
+def run():
+    """CLI entry point."""
+    parser = argparse.ArgumentParser(
+        prog="databrowser",
+        description="Browse and view data files (csv, tsv, parquet, feather, orc, json, "
+        "xlsx, xls, xml, html) from local disk, S3, Hugging Face, or any fsspec filesystem.",
+    )
+    parser.add_argument(
+        "path",
+        nargs="?",
+        default="./",
+        help="file/directory path or fsspec URL (e.g. s3://bucket/dir/, "
+        "hf://datasets/org/name); defaults to the current directory",
+    )
+    parser.add_argument(
+        "--rows",
+        type=int,
+        metavar="N",
+        help=f"max rows to preview (default {DataBrowser.ROW_LIMIT}, or $DATABROWSER_ROWS)",
+    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {_version()}")
+    args = parser.parse_args()
+
+    if args.rows is not None:
+        row_limit = args.rows
+    else:
+        try:
+            row_limit = int(os.environ.get("DATABROWSER_ROWS", DataBrowser.ROW_LIMIT))
+        except ValueError:
+            row_limit = DataBrowser.ROW_LIMIT
+
+    DataBrowser(args.path, row_limit=row_limit).run()
 
 
 if __name__ == "__main__":
