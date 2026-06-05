@@ -1,5 +1,8 @@
 # databrowser
 
+[![PyPI version](https://img.shields.io/pypi/v/databrowser.svg)](https://pypi.org/project/databrowser/)
+[![Python versions](https://img.shields.io/pypi/pyversions/databrowser.svg)](https://pypi.org/project/databrowser/)
+
 A terminal file browser for quickly viewing data files, from local disk or S3.
 
 Supports csv, parquet, json, xlsx, xls, xml and html — read into pandas DataFrames
