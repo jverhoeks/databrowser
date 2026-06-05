@@ -11,26 +11,14 @@ import pathlib
 import sys
 
 import pandas as pd
-from rich.text import Text
-from textual import events
+from textual import events, work
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical
 from textual.reactive import var
-from textual.widgets import DataTable, Footer, Header, Static
+from textual.widgets import DataTable, Footer, Header
+from textual.worker import get_current_worker
 
 from .widgets import DirectoryFilterTree
-
-
-class Notification(Static):
-    """Helper class for notications"""
-
-    def on_mount(self) -> None:
-        """event: mount"""
-        self.set_timer(3, self.remove)
-
-    def on_click(self) -> None:
-        """event:click"""
-        self.remove()
 
 
 class DataBrowser(App):
@@ -49,21 +37,69 @@ class DataBrowser(App):
         ".parquet": pd.read_parquet,
         ".json": pd.read_json,
         ".xlsx": pd.read_excel,
+        ".xls": pd.read_excel,
         ".xml": pd.read_xml,
         ".html": pd.read_html,
     }
 
+    # Maximum number of rows rendered in the preview table.
+    ROW_LIMIT = 100
+    # Loaders whose pandas reader accepts ``nrows`` so we can avoid reading a whole
+    # multi-GB file just to preview the first rows.
+    NROWS_LOADERS = {".csv", ".xlsx"}
+
     show_tree = var(True)
     show_dtype = var(False)
-    dataframe = None
 
-    def _load_table(self, suffix=None, file_path=None):
-        """internal function to load the table"""
+    def __init__(self, path: str = "./", **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.path = path
+        self.dataframe = None
+        self._filename = ""
+        # Whether the last read was capped by ``nrows`` (so the true row count is unknown).
+        self._capped = False
+
+    @work(thread=True, exclusive=True)
+    def _load_file(self, suffix: str, file_path: str) -> None:
+        """Read a data file into a DataFrame off the UI thread.
+
+        pandas readers are blocking, so running them in a worker thread keeps the
+        interface responsive while a large file loads. The table is then rendered
+        back on the UI thread via ``call_from_thread``.
+        """
+        worker = get_current_worker()
+        try:
+            read_kwargs = {"nrows": self.ROW_LIMIT + 1} if suffix in self.NROWS_LOADERS else {}
+            data = self.LOADERS[suffix](file_path, **read_kwargs)
+            # pd.read_html returns a list of DataFrames (one per <table>); preview the first.
+            dataframe = data[0] if isinstance(data, list) else data
+        except Exception as exc:  # pylint: disable=broad-except
+            if not worker.is_cancelled:
+                self.call_from_thread(self._on_load_error, exc, file_path)
+            return
+
+        # A thread read can't be interrupted; if a newer selection superseded this one
+        # while we were reading, drop the stale result instead of showing the wrong file.
+        if worker.is_cancelled:
+            return
+
+        self.dataframe = dataframe
+        self._filename = pathlib.Path(file_path).name
+        self._capped = suffix in self.NROWS_LOADERS
+        self.call_from_thread(self._render_table)
+
+    def _on_load_error(self, exc: Exception, file_path: str) -> None:
+        """Surface a load failure to the user (runs on the UI thread)."""
+        self.notify(f"{type(exc).__name__}: {exc}", title="Failed to load", severity="error")
+        self.sub_title = f"ERROR loading {file_path}"
+
+    def _render_table(self) -> None:
+        """Render the current DataFrame into the DataTable (UI thread only)."""
         table = self.query_one("#data", DataTable)
         table.clear(columns=True)
 
-        if file_path:
-            self.dataframe = self.LOADERS[suffix](file_path)
+        if self.dataframe is None:
+            return
 
         if self.show_dtype:
             show_df = pd.DataFrame(self.dataframe.dtypes.apply(lambda x: x.name).reset_index())
@@ -73,8 +109,24 @@ class DataBrowser(App):
 
         table.add_columns(*show_df.columns.to_list())
         table.zebra_stripes = True
-        for i in range(min(100, len(show_df))):
+        for i in range(min(self.ROW_LIMIT, len(show_df))):
             table.add_row(*show_df.iloc[i])
+
+        self.sub_title = self._status_text()
+
+    def _status_text(self) -> str:
+        """Build the subtitle describing what is currently shown."""
+        rows, cols = self.dataframe.shape
+        if self.show_dtype:
+            return f"{self._filename} — dtypes ({cols} fields)"
+        if rows > self.ROW_LIMIT:
+            if self._capped:
+                shown = f"showing first {self.ROW_LIMIT} rows"
+            else:
+                shown = f"showing {self.ROW_LIMIT} of {rows} rows"
+        else:
+            shown = f"{rows} rows"
+        return f"{self._filename} — {shown}, {cols} columns"
 
     def watch_show_tree(self, show_tree: bool) -> None:
         """Called when show_tree is modified."""
@@ -82,11 +134,10 @@ class DataBrowser(App):
 
     def compose(self) -> ComposeResult:
         """Compose our UI."""
-        path = "./" if len(sys.argv) < 2 else sys.argv[1]
         yield Header()
         with Container():
             yield DirectoryFilterTree(
-                path,
+                self.path,
                 list(self.LOADERS.keys()),
                 id="tree-view",
             )
@@ -104,16 +155,13 @@ class DataBrowser(App):
         event.stop()
 
         suffix = pathlib.Path(event.path).suffix.lower()
+        if suffix not in self.LOADERS:
+            self.notify(f"Unsupported file type: {suffix}", severity="warning")
+            self.sub_title = f"Unsupported file type: {suffix}"
+            return
 
-        try:
-            if suffix in self.LOADERS:
-                self._load_table(suffix, event.path)
-            else:
-                self.sub_title = f"Unsupported file type:  {suffix}"
-        except Exception as exc:  # pylint: disable=W0703
-            self.sub_title = f"ERROR {exc} {event.path}"
-        else:
-            self.sub_title = event.path
+        self.sub_title = f"Loading {pathlib.Path(event.path).name} …"
+        self._load_file(suffix, event.path)
 
     def action_toggle_files(self) -> None:
         """Called in response to key binding."""
@@ -121,8 +169,11 @@ class DataBrowser(App):
 
     def action_toggle_dtype(self) -> None:
         """Called in response to key binding."""
+        if self.dataframe is None:
+            self.notify("Select a data file first", severity="warning")
+            return
         self.show_dtype = not self.show_dtype
-        self._load_table()
+        self._render_table()
 
     def action_screenshot(self, filename=None, path: str = "./") -> None:
         """Save an SVG "screenshot". This action will save an SVG file containing
@@ -133,14 +184,14 @@ class DataBrowser(App):
             path: Path to directory. Defaults to "./".
         """
         self.bell()
-        path = self.save_screenshot(filename, path)
-        message = Text.assemble("Screenshot saved to ", (f"'{path}'", "bold green"))
-        self.screen.mount(Notification(message))
+        saved = self.save_screenshot(filename, path)
+        self.notify(f"Screenshot saved to '{saved}'", title="Screenshot")
 
 
 def run():
     """Run helper"""
-    DataBrowser().run()
+    path = "./" if len(sys.argv) < 2 else sys.argv[1]
+    DataBrowser(path).run()
 
 
 if __name__ == "__main__":

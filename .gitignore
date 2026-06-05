@@ -131,3 +131,6 @@ dmypy.json
 
 # don't upload datafile
 *.csv
+
+# SVG screenshots saved by the app's `s` keybinding
+DataBrowser_*.svg
