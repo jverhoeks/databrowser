@@ -35,7 +35,7 @@ jobs:
       new_tag: ${{ steps.tag.outputs.new_tag }}
       old_tag: ${{ steps.tag.outputs.old_tag }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
@@ -57,7 +57,7 @@ jobs:
       contents: write   # create the GitHub release
       id-token: write   # PyPI trusted publishing (OIDC)
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Check out the new tag
